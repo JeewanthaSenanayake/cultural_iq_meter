@@ -1,6 +1,6 @@
 import 'package:cultural_iq_meter/Pages/GetStart.dart';
 import 'package:flutter/material.dart';
-import 'Pages/MainMenu.dart';
+
 
 void main() {
   runApp(const MyApp());
