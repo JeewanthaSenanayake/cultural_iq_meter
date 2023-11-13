@@ -1,7 +1,6 @@
 import 'package:cultural_iq_meter/Pages/GetStart.dart';
 import 'package:flutter/material.dart';
 
-
 void main() {
   runApp(const MyApp());
 }
@@ -18,7 +17,7 @@ class MyApp extends StatelessWidget {
             Colors.black, // Set the background color of the app
         primarySwatch: Colors.grey,
       ),
-      home: GetStart(), 
+      home: GetStart(),
     );
   }
 }

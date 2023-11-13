@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:ui';
 
+import 'package:cultural_iq_meter/Pages/ScoreView.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -17,13 +19,23 @@ class _QuestionPageState extends State<QuestionPage> {
   _QuestionPageState(this.leval, this.num);
   bool loading = true;
   dynamic qData;
+  int _seconds = 0;
+  late Timer _timer;
+  dynamic ansverdQList = [];
   Future getQuestions(int lvl, int number) async {
     final response = await http.get(Uri.parse(
         'https://cultural-iq-meter.onrender.com/iq_meter/api/v1/questions/get_questions/$lvl/$number'));
 
+    //for timer
+    _timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
+      setState(() {
+        _seconds++;
+      });
+    });
+
     if (response.statusCode == 200) {
       qData = json.decode(response.body);
-      createQList(qData);
+      ansverdQList = createQList(qData);
       setState(() {
         loading = false;
       });
@@ -38,7 +50,8 @@ class _QuestionPageState extends State<QuestionPage> {
   double scrnwidth = 0;
   double scrnheight = 0;
   List<Container> ContainerList = [];
-  void createQList(data) {
+
+  dynamic createQList(data) {
     ContainerList = [];
     for (var i = 0; i < data['questions'].length; i++) {
       if (data['questions'][i]['img_url'] == '') {
@@ -68,7 +81,7 @@ class _QuestionPageState extends State<QuestionPage> {
                           setState(() {
                             data['questions'][i]['selected_ans'] = "ans1";
                           });
-                          createQList(data);
+                          ansverdQList = createQList(data);
                         }
                       },
                       child: Container(
@@ -106,7 +119,7 @@ class _QuestionPageState extends State<QuestionPage> {
                           setState(() {
                             data['questions'][i]['selected_ans'] = "ans2";
                           });
-                          createQList(data);
+                          ansverdQList = createQList(data);
                         }
                       },
                       child: Container(
@@ -143,7 +156,7 @@ class _QuestionPageState extends State<QuestionPage> {
                           setState(() {
                             data['questions'][i]['selected_ans'] = "ans3";
                           });
-                          createQList(data);
+                          ansverdQList = createQList(data);
                         }
                       },
                       child: Container(
@@ -180,7 +193,7 @@ class _QuestionPageState extends State<QuestionPage> {
                           setState(() {
                             data['questions'][i]['selected_ans'] = "ans4";
                           });
-                          createQList(data);
+                          ansverdQList = createQList(data);
                         }
                         print(data['questions'][i]);
                       },
@@ -301,7 +314,7 @@ class _QuestionPageState extends State<QuestionPage> {
                           setState(() {
                             data['questions'][i]['selected_ans'] = "ans1";
                           });
-                          createQList(data);
+                          ansverdQList = createQList(data);
                         }
                       },
                       child: Container(
@@ -339,7 +352,7 @@ class _QuestionPageState extends State<QuestionPage> {
                           setState(() {
                             data['questions'][i]['selected_ans'] = "ans2";
                           });
-                          createQList(data);
+                          ansverdQList = createQList(data);
                         }
                       },
                       child: Container(
@@ -377,7 +390,7 @@ class _QuestionPageState extends State<QuestionPage> {
                           setState(() {
                             data['questions'][i]['selected_ans'] = "ans3";
                           });
-                          createQList(data);
+                          ansverdQList = createQList(data);
                         }
                       },
                       child: Container(
@@ -415,7 +428,7 @@ class _QuestionPageState extends State<QuestionPage> {
                           setState(() {
                             data['questions'][i]['selected_ans'] = "ans4";
                           });
-                          createQList(data);
+                          ansverdQList = createQList(data);
                         }
                         print(data['questions'][i]);
                       },
@@ -555,8 +568,8 @@ class _QuestionPageState extends State<QuestionPage> {
                             data['questions'][i]['selected_ans'] = "ans1";
                           });
                         }
+                        ansverdQList = createQList(data);
                         print(data['questions'][i]);
-                        // createQList(data);
                       },
                       child: Container(
                         margin: EdgeInsets.only(top: 15),
@@ -592,7 +605,7 @@ class _QuestionPageState extends State<QuestionPage> {
                           setState(() {
                             data['questions'][i]['selected_ans'] = "ans2";
                           });
-                          createQList(data);
+                          ansverdQList = createQList(data);
                         }
                       },
                       child: Container(
@@ -629,7 +642,7 @@ class _QuestionPageState extends State<QuestionPage> {
                           setState(() {
                             data['questions'][i]['selected_ans'] = "ans3";
                           });
-                          createQList(data);
+                          ansverdQList = createQList(data);
                         }
                       },
                       child: Container(
@@ -666,7 +679,7 @@ class _QuestionPageState extends State<QuestionPage> {
                           setState(() {
                             data['questions'][i]['selected_ans'] = "ans4";
                           });
-                          createQList(data);
+                          ansverdQList = createQList(data);
                         }
                       },
                       child: Container(
@@ -759,6 +772,7 @@ class _QuestionPageState extends State<QuestionPage> {
         );
       }
     }
+    return data;
   }
 
   @override
@@ -768,9 +782,17 @@ class _QuestionPageState extends State<QuestionPage> {
     getQuestions(leval, num);
   }
 
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
   int qid = 0;
   @override
   Widget build(BuildContext context) {
+    int minutes = _seconds ~/ 60;
+    int remainingSeconds = _seconds % 60;
     setState(() {
       scrnwidth = MediaQuery.of(context).size.width;
       scrnheight = MediaQuery.of(context).size.height;
@@ -796,36 +818,96 @@ class _QuestionPageState extends State<QuestionPage> {
                   margin: const EdgeInsets.all(15.0),
                   child: Column(
                     children: [
+                      Container(
+                        margin: EdgeInsets.only(bottom: scrnheight * 0.015),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Chip(
+                              // elevation: 20,
+                              padding: EdgeInsets.all(5),
+                              backgroundColor: Colors.yellow,
+                              shadowColor: Colors.black,
+                              label: Text(
+                                '${qid + 1} of ${ContainerList.length}',
+                                style: TextStyle(
+                                    fontSize: scrnwidth * 0.04,
+                                    color: Colors.black),
+                              ),
+                            ),
+                            Chip(
+                              // elevation: 20,
+                              padding: EdgeInsets.all(5),
+                              backgroundColor:
+                                  Color.fromARGB(255, 244, 54, 149),
+                              shadowColor: Colors.black,
+                              avatar: const Icon(
+                                Icons.watch_later_outlined,
+                                color: Colors.white,
+                              ),
+                              label: Text(
+                                '$minutes:${remainingSeconds.toString().padLeft(2, '0')}',
+                                style: TextStyle(
+                                    fontSize: scrnwidth * 0.04,
+                                    color: Colors.white),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                       ContainerList[qid],
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          ElevatedButton(
-                            child: Text('Back'),
-                            style: ElevatedButton.styleFrom(
-                              primary: Colors.green,
-                            ),
-                            onPressed: () {
-                              if (qid != 0) {
-                                setState(() {
-                                  qid--;
-                                });
-                              }
-                            },
-                          ),
-                          ElevatedButton(
-                            child: Text('Next'),
-                            style: ElevatedButton.styleFrom(
-                              primary: Colors.green,
-                            ),
-                            onPressed: () {
-                              if (qid < ContainerList.length - 1) {
-                                setState(() {
-                                  qid++;
-                                });
-                              }
-                            },
-                          ),
+                          qid != 0
+                              ? ElevatedButton(
+                                  child: Text('Back'),
+                                  style: ElevatedButton.styleFrom(
+                                      primary: Colors.green,
+                                      fixedSize: Size(
+                                          scrnwidth * 0.25, scrnheight * 0.05)),
+                                  onPressed: () {
+                                    if (qid != 0) {
+                                      setState(() {
+                                        qid--;
+                                      });
+                                    }
+                                  },
+                                )
+                              : const Text(""),
+                          qid < ContainerList.length - 1
+                              ? ElevatedButton(
+                                  child: Text('Next'),
+                                  style: ElevatedButton.styleFrom(
+                                      primary: Colors.green,
+                                      fixedSize: Size(
+                                          scrnwidth * 0.25, scrnheight * 0.05)),
+                                  onPressed: () {
+                                    if (qid < ContainerList.length - 1) {
+                                      setState(() {
+                                        qid++;
+                                      });
+                                    }
+                                  },
+                                )
+                              : ElevatedButton(
+                                  child: Text('Next'),
+                                  style: ElevatedButton.styleFrom(
+                                      primary: Colors.green,
+                                      fixedSize: Size(
+                                          scrnwidth * 0.25, scrnheight * 0.05)),
+                                  onPressed: () {
+                                    _timer.cancel();
+
+                                    Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                            builder: (context) => ScoreView(
+                                                qDataList: ansverdQList,
+                                                timeTacken: _seconds,
+                                                num: num,
+                                                leval: leval)));
+                                  },
+                                ),
                         ],
                       ),
                     ],
