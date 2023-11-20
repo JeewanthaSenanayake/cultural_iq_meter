@@ -8,17 +8,20 @@ import 'dart:convert';
 
 class QuestionPage extends StatefulWidget {
   int leval, num;
-  QuestionPage({super.key, required this.leval, required this.num});
+  dynamic userData;
+  QuestionPage({super.key, required this.leval, required this.num, required this.userData});
 
   @override
-  State<QuestionPage> createState() => _QuestionPageState(leval, num);
+  State<QuestionPage> createState() => _QuestionPageState(leval, num, userData);
 }
 
 class _QuestionPageState extends State<QuestionPage> {
   int leval, num;
-  _QuestionPageState(this.leval, this.num);
+  dynamic userData;
+  _QuestionPageState(this.leval, this.num, this.userData);
   bool loading = true;
   dynamic qData;
+  
   int _seconds = 0;
   late Timer _timer;
   dynamic ansverdQList = [];
@@ -905,7 +908,8 @@ class _QuestionPageState extends State<QuestionPage> {
                                                 qDataList: ansverdQList,
                                                 timeTacken: _seconds,
                                                 num: num,
-                                                leval: leval)));
+                                                leval: leval,
+                                                userData: userData,)));
                                   },
                                 ),
                         ],

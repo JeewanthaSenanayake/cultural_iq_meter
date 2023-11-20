@@ -1,30 +1,40 @@
 import 'dart:async';
+import 'dart:developer';
+import 'package:cultural_iq_meter/Pages/MainMenu.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
 class ScoreView extends StatefulWidget {
-  dynamic qDataList;
+  dynamic qDataList, userData;
   int timeTacken, num, leval;
   ScoreView(
       {super.key,
       required this.qDataList,
       required this.timeTacken,
       required this.num,
-      required this.leval});
+      required this.leval,
+      required this.userData});
 
   @override
   State<ScoreView> createState() =>
-      _ScoreViewState(qDataList, timeTacken, num, leval);
+      _ScoreViewState(qDataList, timeTacken, num, leval, userData);
 }
 
 class _ScoreViewState extends State<ScoreView> {
-  dynamic qDataList;
+  dynamic qDataList, userData;
   int timeTacken, num, leval;
-  _ScoreViewState(this.qDataList, this.timeTacken, this.num, this.leval);
+  _ScoreViewState(
+      this.qDataList, this.timeTacken, this.num, this.leval, this.userData);
 
   double calculateMarks(response, int ttime) {
     double marks = 0;
-    double multiplayer = 90 / num;
+    double multiplayer = leval == 1
+        ? 10
+        : leval == 2
+            ? 20
+            : 30;
     for (var element in response['questions']) {
       try {
         if (element["selected_ans"] == element["correct_ans"]) {
@@ -35,26 +45,24 @@ class _ScoreViewState extends State<ScoreView> {
       }
     }
     double timeBasedMark = 0.0;
-    if (ttime > num * 10) {
-      timeBasedMark = 10.0 - ((ttime - (num * 10)) ~/ 10);
+    if (ttime >= num * 7) {
+      timeBasedMark = 35.0 - ((ttime - (num * 7)) ~/ 5);
     } else {
-      timeBasedMark = 10.0;
+      timeBasedMark = 35.0;
     }
 
     if (timeBasedMark < 0) {
       timeBasedMark = 0;
     }
 
-    return marks == 0
-        ? 0
-        : (marks.ceilToDouble() + timeBasedMark) >= 100
-            ? 100
-            : (marks.ceilToDouble() + timeBasedMark);
+    marks = marks + marks * (timeBasedMark / 100);
+
+    return double.parse(marks.toStringAsFixed(2));
   }
 
   double totalMarks = 0;
   late Timer _timer;
-  int _counter = 1;
+  double _counter = 1;
   @override
   void initState() {
     // TODO: implement initState
@@ -63,15 +71,17 @@ class _ScoreViewState extends State<ScoreView> {
     _timer = Timer.periodic(Duration(milliseconds: 10), (timer) {
       if (_counter < totalMarks) {
         setState(() {
-          _counter++;
+          _counter = _counter + 1.0;
         });
       } else {
+        _counter = totalMarks;
         _timer.cancel(); // Stop the timer when the counter reaches 100
 
       }
     });
   }
 
+  bool _isLoading = false;
   @override
   Widget build(BuildContext context) {
     double scrnwidth = MediaQuery.of(context).size.width;
@@ -92,12 +102,12 @@ class _ScoreViewState extends State<ScoreView> {
                       TextStyle(color: Colors.white, fontSize: scrnwidth * 0.1),
                 ),
                 Text(
-                  "${_counter}%",
+                  "${_counter}",
                   style:
                       TextStyle(color: Colors.white, fontSize: scrnwidth * 0.3),
                 ),
                 Text(
-                  "\nName : Jeewantha",
+                  "\nName : ${userData['name']}",
                   style: TextStyle(
                       color: Colors.white, fontSize: scrnwidth * 0.05),
                 ),
@@ -107,17 +117,49 @@ class _ScoreViewState extends State<ScoreView> {
                       color: Colors.white, fontSize: scrnwidth * 0.05),
                 ),
                 ElevatedButton(
-                  child: const Text('Continue'),
-                  style: ElevatedButton.styleFrom(
-                      primary: Colors.green,
-                      fixedSize: Size(scrnwidth * 0.25, scrnheight * 0.05)),
-                  onPressed: () {
-                    // Navigator.of(context).push(
-                    //     MaterialPageRoute(
-                    //         builder: (context) => ScoreView(
-                    //             )));
-                  },
-                ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text('Continue'),
+                    style: ElevatedButton.styleFrom(
+                        primary: Colors.green,
+                        fixedSize: Size(scrnwidth * 0.25, scrnheight * 0.05)),
+                    onPressed: () async {
+                      setState(() {
+                        _isLoading = true;
+                      });
+                      print(userData);
+                      final response = await http.post(Uri.parse(
+                          'https://cultural-iq-meter.onrender.com/iq_meter/api/v1/users/submit_score/${userData['uid']}/$totalMarks/$leval'));
+                      print(response.statusCode);
+                      if (response.statusCode == 200) {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                        dynamic userData = jsonDecode(response.body);
+
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => MainMenu(
+                                  userData: userData["data"],
+                                )));
+                      } else {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Something went wrong, try again"),
+                          ),
+                        );
+                      }
+                      print(totalMarks);
+                    }),
               ],
             ),
           ),

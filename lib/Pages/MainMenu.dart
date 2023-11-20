@@ -2,13 +2,16 @@ import 'package:cultural_iq_meter/Pages/QuestionPage.dart';
 import 'package:flutter/material.dart';
 
 class MainMenu extends StatefulWidget {
-  const MainMenu({super.key});
+  dynamic userData;
+  MainMenu({super.key, required this.userData});
 
   @override
-  State<MainMenu> createState() => _MainMenuState();
+  State<MainMenu> createState() => _MainMenuState(userData);
 }
 
 class _MainMenuState extends State<MainMenu> {
+  dynamic userData;
+  _MainMenuState(this.userData);
   @override
   Widget build(BuildContext context) {
     double scrnwidth = MediaQuery.of(context).size.width;
@@ -38,10 +41,12 @@ class _MainMenuState extends State<MainMenu> {
                 child: GestureDetector(
                   onTap: () async {
                     print("Easy");
+
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => QuestionPage(
                               leval: 1,
                               num: 10,
+                              userData: userData,
                             )));
                   },
                   child: Container(
@@ -49,10 +54,11 @@ class _MainMenuState extends State<MainMenu> {
                     width: scrnwidth * 0.75,
                     color: Color.fromARGB(175, 56, 238, 39),
                     child: Center(
-                        child: Text(
-                      "Easy",
-                      style: TextStyle(fontSize: scrnwidth * 0.15),
-                    )),
+                      child: Text(
+                        "Easy",
+                        style: TextStyle(fontSize: scrnwidth * 0.15),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -67,6 +73,7 @@ class _MainMenuState extends State<MainMenu> {
                         builder: (context) => QuestionPage(
                               leval: 2,
                               num: 10,
+                              userData: userData,
                             )));
                   },
                   child: Container(
@@ -74,10 +81,11 @@ class _MainMenuState extends State<MainMenu> {
                     width: scrnwidth * 0.75,
                     color: Color.fromARGB(175, 235, 238, 39),
                     child: Center(
-                        child: Text(
-                      "Medium",
-                      style: TextStyle(fontSize: scrnwidth * 0.15),
-                    )),
+                      child: Text(
+                        "Medium",
+                        style: TextStyle(fontSize: scrnwidth * 0.15),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -92,6 +100,7 @@ class _MainMenuState extends State<MainMenu> {
                         builder: (context) => QuestionPage(
                               leval: 3,
                               num: 10,
+                              userData: userData,
                             )));
                   },
                   child: Container(
@@ -99,10 +108,11 @@ class _MainMenuState extends State<MainMenu> {
                     width: scrnwidth * 0.75,
                     color: Color.fromARGB(175, 238, 39, 39),
                     child: Center(
-                        child: Text(
-                      "Hard",
-                      style: TextStyle(fontSize: scrnwidth * 0.15),
-                    )),
+                      child: Text(
+                        "Hard",
+                        style: TextStyle(fontSize: scrnwidth * 0.15),
+                      ),
+                    ),
                   ),
                 ),
               ),

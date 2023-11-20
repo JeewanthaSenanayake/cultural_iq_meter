@@ -1,5 +1,8 @@
 import 'package:cultural_iq_meter/Pages/MainMenu.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:async';
 
 class GetStart extends StatefulWidget {
   const GetStart({super.key});
@@ -9,6 +12,8 @@ class GetStart extends StatefulWidget {
 }
 
 class _GetStartState extends State<GetStart> {
+  TextEditingController _textController = TextEditingController();
+  bool _isLoading = false;
   @override
   Widget build(BuildContext context) {
     double scrnwidth = MediaQuery.of(context).size.width;
@@ -51,20 +56,94 @@ class _GetStartState extends State<GetStart> {
                 ),
               ),
             ),
-            Container(
-              margin: EdgeInsets.only(top: scrnheight * 0.125),
-              child: ElevatedButton(
-                child: Text(
-                  'Get Start',
-                  style: TextStyle(fontSize: 35, color: Colors.white),
+            Center(
+              child: Padding(
+                padding: EdgeInsets.all(scrnheight * 0.04),
+                child: TextField(
+                  controller: _textController,
+                  style: const TextStyle(
+                    // Set the text color of the user input
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.person),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: const BorderSide(
+                          color: Colors
+                              .blue, // Replace with your desired border color
+                          width: 4.0,
+                        ),
+                      ),
+                      labelText: 'User Name',
+                      labelStyle: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
+                      hintText: 'Enter Your Name',
+                      hintStyle: const TextStyle(
+                        color: Colors.white,
+                      )),
                 ),
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.only(top: scrnheight * 0.03),
+              child: ElevatedButton(
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text(
+                        'Get Start',
+                        style: TextStyle(fontSize: 35, color: Colors.white),
+                      ),
                 style: ElevatedButton.styleFrom(
-                    primary: Colors.green,
-                    padding: EdgeInsets.only(
+                    backgroundColor: Colors.green,
+                    padding: const EdgeInsets.only(
                         left: 10, right: 10, top: 5, bottom: 5)),
-                onPressed: () {
-                  Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => MainMenu()));
+                onPressed: () async {
+                  if (_textController.text.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text("User name can't be empty"),
+                    ));
+                  } else {
+                    setState(() {
+                      _isLoading = true;
+                    });
+
+                    final response = await http.put(Uri.parse(
+                        'https://cultural-iq-meter.onrender.com/iq_meter/api/v1/users/add_user/${_textController.text}'));
+                    print(response.statusCode);
+                    if (response.statusCode == 200) {
+                      setState(() {
+                        _isLoading = false;
+                      });
+                      dynamic userData = jsonDecode(response.body);
+                      print(userData);
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => MainMenu(
+                                userData: userData["user"],
+                              )));
+                    } else {
+                      setState(() {
+                        _isLoading = false;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              "This username is allready taken, try another"),
+                        ),
+                      );
+                    }
+                  }
                 },
               ),
             ),
