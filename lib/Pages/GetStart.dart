@@ -79,7 +79,7 @@ class _GetStartState extends State<GetStart> {
                           width: 4.0,
                         ),
                       ),
-                      labelText: 'User Name',
+                      labelText: 'Name',
                       labelStyle: const TextStyle(
                           color: Colors.white, fontWeight: FontWeight.bold),
                       hintText: 'Enter Your Name',
@@ -112,7 +112,7 @@ class _GetStartState extends State<GetStart> {
                 onPressed: () async {
                   if (_textController.text.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                      content: Text("User name can't be empty"),
+                      content: Text("Name can't be empty"),
                     ));
                   } else {
                     setState(() {
@@ -138,8 +138,8 @@ class _GetStartState extends State<GetStart> {
                       });
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text(
-                              "This username is allready taken, try another"),
+                          content:
+                              Text("This Name is allready taken, try another"),
                         ),
                       );
                     }
